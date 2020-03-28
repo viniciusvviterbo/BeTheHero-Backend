@@ -4,16 +4,16 @@ const conexao = require('../database/conexao');
 module.exports = {
     async list(req, resp) {
         // Armazena o valor enviado como query pela requisição para saber a numeração da página pedida. Tem como valor padrão '1'
-        const {page = 1} = req.query;
+        const {pagina = 1} = req.query;
         // Armazena o valor total de casos no banco de dados
         const [contador] = await conexao('Casos').count();
         // Executa uma busca de todos os registros na tabela 'Casos'. 
-        // Com a paginação, cada retorno possui um limite de 5 instâncias. 'offset' configura o passo de paginação em (page-1)*5 (no caso, a página 1 retorna os casos 1-5, a página 2 retorna 6-10, etc).
+        // Com a paginação, cada retorno possui um limite de 5 instâncias. 'offset' configura o passo de paginação em (pagina-1)*5 (no caso, a página 1 retorna os casos 1-5, a página 2 retorna 6-10, etc).
         // Agrega-se ao retorno de cada caso o registro da ONG responsável.
         const casos = await conexao('Casos')
-                        .join('Ongs', 'ong_id', '=', 'Casos.ong_id')
+                        .join('Ongs', 'ong_id', '=', 'Ongs.id')
                         .limit(5)
-                        .offset((page - 1) * 5)
+                        .offset((pagina - 1) * 5)
                         .select('Casos.*', 'Ongs.nome', 'Ongs.email', 'Ongs.whatsapp', 'Ongs.cidade', 'Ongs.uf');
         // Adiciona ao cabeçalho da resposta ao client o número total de casos no banco de dados
         resp.header('X-Total-Count', contador['count(*)']);
